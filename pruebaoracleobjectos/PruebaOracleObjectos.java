@@ -5,10 +5,13 @@
  */
 package pruebaoracleobjectos;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Struct;
 
 /**
  *
@@ -44,7 +47,6 @@ public class PruebaOracleObjectos {
       }
     
     public static void insertarFila() throws SQLException{
-        //PreparedStatement pst = conx.prepareStatement("insert into alumnos values(?,?,enderezo(?,?,?),TO_DATE(?, 'dd.mm.yyyy hh24:mi:ss')");
         PreparedStatement pst2 = conx.prepareStatement("insert into alumnos values(?,?,enderezo(?,?,?),TO_DATE(?, 'dd.mm.yyyy hh24:mi:ss'))");
         Direccion d = new Direccion("faisan,24","vigo",36205);
         pst2.setInt(1, 5);
@@ -59,13 +61,30 @@ public class PruebaOracleObjectos {
     }
     
     public static void actualizarFila() throws SQLException{
-        //PreparedStatement pst = conx.prepareStatement("insert into alumnos values(?,?,enderezo(?,?,?),TO_DATE(?, 'dd.mm.yyyy hh24:mi:ss')");
-        PreparedStatement pst2 = conx.prepareStatement("update alumnos a set a.enderezot.cidade=? where codigo=?");
+        PreparedStatement pst2 = conx.prepareStatement("update alumnos a set a.enderezot.rua=? where codigo=?");
         
         pst2.setInt(2, 1);
-        pst2.setString(1, "pontevedra");
+        pst2.setString(1, "pombal,11");
         if(pst2.executeUpdate() > 0){
             System.out.println("Modificacion hecha");
+        }
+    }
+    
+    public static void lerEnderezo() throws SQLException {
+        Struct dir;
+        PreparedStatement pst = conx.prepareStatement("select * from alumnos");
+        ResultSet rs = pst.executeQuery();
+        System.out.println("Direcciones:");
+        while(rs.next()){
+            System.out.println("Codigo: " + rs.getInt(1));
+            System.out.println("Nombre: " + rs.getString(2));
+            dir=(Struct)rs.getObject(3);
+            Object[] campos = dir.getAttributes();
+            System.out.println("Direcciones:");
+            System.out.println("   Calle: " + (String)campos[0]);
+            System.out.println("   Ciudad: " + (String)campos[1]);
+            System.out.println("   Zip: " + (BigDecimal)campos[2]);
+            System.out.println("Fecha: " + rs.getDate(4));
         }
     }
     
@@ -75,6 +94,7 @@ public class PruebaOracleObjectos {
         try{
             insertarFila();
             actualizarFila();
+            lerEnderezo();
         }catch(SQLException e){
             e.printStackTrace();
         }
